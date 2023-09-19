@@ -1,25 +1,51 @@
-const inquirer = require("inquirer");
-const fs = require("fs")
-const questions = require('./lib/QA')
-const setShape = require('./lib/setShape')
-let SVG = require('./examples/logo.svg')
-const { colorKeywords } = require('./lib/colorKeywords')
+const inquirer = require('inquirer');
+const fs = require('fs');
+const Shape = require('./lib/shape');
+const { Circle, Triangle, Square } = require('./lib/shape');
+
+const promptUser = async () => {
+  const userInput = await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'text',
+      message: 'Enter up to three characters:',
+    },
+    {
+      type: 'input',
+      name: 'textColor',
+      message: 'Enter text color (color keyword or hexadecimal number):',
+    },
+    {
+      type: 'list',
+      name: 'shapeType',
+      message: 'Choose a shape:',
+      choices: ['circle', 'triangle', 'square'],
+    },
+    {
+      type: 'input',
+      name: 'shapeColor',
+      message: 'Enter shape color (color keyword or hexadecimal number):',
+    },
+  ]);
 
 
-function createLogo(response) {
-    const svg = setShape(response);
-    fs.writeFile(('logo.svg'), svg.render(), () => console.log('Generated logo.svg'));
-}
+  let shape;
+  if (userInput.shapeType === 'circle') {
+    shape = new Circle();
+  } else if (userInput.shapeType === 'triangle') {
+    shape = new Triangle();
+  } else if (userInput.shapeType === 'square') {
+    shape = new Square();
+  }
 
-function init() {
-    inquirer
-        .prompt(questions)
-        .then((response) => {
-            createLogo(response);
-        })
-        .catch(err => {
-             console.log(err)
-        });
-}
+  shape.text = userInput.text;
+  shape.textColor = userInput.textColor;
+  shape.shapeColor = userInput.shapeColor;
 
-init();
+  const svgContent = shape.render();
+  fs.writeFileSync('logo.svg', svgContent);
+
+  console.log('Generated logo.svg');
+};
+
+promptUser();
